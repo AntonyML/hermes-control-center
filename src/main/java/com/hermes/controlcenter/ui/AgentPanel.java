@@ -365,21 +365,31 @@ public class AgentPanel extends JPanel implements AgentController.Listener {
     }
 
     private void renderOutput(TaskRecord rec) {
-        if (rec == null) {
-            outputArea.setText("");
-            return;
-        }
-        List<TaskRecord.Line> lines = rec.outputSnapshot();
-        StringBuilder sb = new StringBuilder();
-        for (TaskRecord.Line l : lines) {
-            sb.append(l.format()).append('\n');
-        }
-        String newText = sb.toString();
-        String current = outputArea.getText();
-        // Avoid re-setting the whole text on every tick; only set if length grew.
-        if (!newText.equals(current)) {
-            outputArea.setText(newText);
-            outputArea.setCaretPosition(Math.max(0, outputArea.getDocument().getLength() - 1));
+        try {
+            if (rec == null) {
+                outputArea.setText("");
+                return;
+            }
+            List<TaskRecord.Line> lines = rec.outputSnapshot();
+            StringBuilder sb = new StringBuilder();
+            for (TaskRecord.Line l : lines) {
+                try {
+                    sb.append(l.format()).append('\n');
+                } catch (Exception lineEx) {
+                    sb.append("[--:--:--    ] ").append(l == null ? "" :
+                        (l.text == null ? "" : l.text)).append('\n');
+                }
+            }
+            String newText = sb.toString();
+            String current = outputArea.getText();
+            if (!newText.equals(current)) {
+                outputArea.setText(newText);
+                outputArea.setCaretPosition(Math.max(0, outputArea.getDocument().getLength() - 1));
+            }
+        } catch (Exception fatal) {
+            // Última línea de defensa: NUNCA dejar que un error de formato
+            // tumbe el EDT. Limpiamos a un estado seguro y seguimos.
+            outputArea.setText("[render-error: " + fatal.getClass().getSimpleName() + "]\n");
         }
     }
 

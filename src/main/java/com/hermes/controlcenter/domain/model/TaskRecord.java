@@ -1,6 +1,8 @@
 package com.hermes.controlcenter.domain.model;
 
+import java.time.Instant;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -93,6 +95,28 @@ public class TaskRecord {
         return sb.toString();
     }
 
+    public synchronized String fullStdout() {
+        StringBuilder sb = new StringBuilder();
+        for (Line l : output) if (!l.stderr) sb.append(l.text).append('\n');
+        return sb.toString();
+    }
+
+    public synchronized String fullStderr() {
+        StringBuilder sb = new StringBuilder();
+        for (Line l : output) if (l.stderr) sb.append(l.text).append('\n');
+        return sb.toString();
+    }
+
+    public synchronized String firstStderrLine() {
+        for (Line l : output) {
+            if (l.stderr) {
+                String t = l.text == null ? "" : l.text.trim();
+                if (!t.isEmpty()) return t.length() > 200 ? t.substring(0, 200) + "..." : t;
+            }
+        }
+        return "";
+    }
+
     public long durationMs() {
         long start = startedAt == 0 ? submittedAt : startedAt;
         long end = finishedAt == 0 ? System.currentTimeMillis() : finishedAt;
@@ -113,14 +137,25 @@ public class TaskRecord {
         public final long ts;
         public final boolean stderr;
         public final String text;
+        private static final DateTimeFormatter HMS = DateTimeFormatter.ofPattern("HH:mm:ss");
+
         public Line(long ts, boolean stderr, String text) {
             this.ts = ts; this.stderr = stderr; this.text = text;
         }
         public String format() {
-            LocalTime t = LocalTime.ofNanoOfDay((ts % 86_400_000_000_000L) * 1_000_000L);
-            String prefix = LocalTime.now().getHour() < 0 ? "" :
-                t.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-            return "[" + prefix + (stderr ? " err" : "    ") + "] " + text;
+            String prefix;
+            try {
+                LocalTime t;
+                if (ts <= 0L) {
+                    t = LocalTime.now();
+                } else {
+                    t = Instant.ofEpochMilli(ts).atZone(ZoneId.systemDefault()).toLocalTime();
+                }
+                prefix = t.format(HMS);
+            } catch (Exception ex) {
+                prefix = "--:--:--";
+            }
+            return "[" + prefix + (stderr ? " err" : "    ") + "] " + (text == null ? "" : text);
         }
     }
 }

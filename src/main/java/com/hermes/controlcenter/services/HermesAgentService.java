@@ -67,7 +67,16 @@ public class HermesAgentService {
         TaskRecord rec = new TaskRecord(prompt);
         if (workingDir != null && !workingDir.isBlank()) rec.setWorkingDir(workingDir);
         if (role != null && !role.isBlank()) rec.setAssignedRole(role);
-        String[] cmd = buildCommand(prompt, rec.getWorkingDir());
+
+        // Pre-flight: si el CLI de hermes no está disponible, fallback
+        // automático a `bash -lc "<prompt>"` (modo directo seguro).
+        boolean hermesAvailable = probeHermesAvailable();
+        if (!hermesAvailable) {
+            rec.appendOutput("[hcc] pre-flight: hermes CLI no encontrado, usando fallback bash -lc", true);
+            log.warn("hermes-agent: pre-flight failed, using bash fallback for task {}", rec.getId());
+        }
+
+        String[] cmd = buildCommand(prompt, rec.getWorkingDir(), !hermesAvailable);
         rec.setCommandLine(String.join(" ", cmd));
         synchronized (runLock) {
             currentTask = rec;
@@ -76,6 +85,39 @@ public class HermesAgentService {
             runOnIoThread(rec, cmd);
         }
         return rec;
+    }
+
+    /**
+     * Comprueba si el binario hermes-agent es ejecutable dentro de WSL.
+     * Read-only: ejecuta un `test -x` rápido. Timeout corto.
+     */
+    private boolean probeHermesAvailable() {
+        String wslRoot = wslPath(config.getHermesRoot());
+        String probe = "test -x " + wslRoot + "/hermes-agent/.venv/bin/python && "
+            + "test -f " + wslRoot + "/hermes-agent/hermes && echo __OK__ || echo __NO__";
+        String[] cmd = {
+            "wsl", "-d", config.getWslDistro(), "-u", config.getLinuxUser(), "--",
+            "bash", "-lc", probe
+        };
+        try {
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            String out;
+            try (BufferedReader r = new BufferedReader(
+                    new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = r.readLine()) != null) sb.append(line);
+                out = sb.toString();
+            }
+            p.waitFor(5, java.util.concurrent.TimeUnit.SECONDS);
+            if (p.isAlive()) p.destroyForcibly();
+            return out.contains("__OK__");
+        } catch (Exception e) {
+            log.warn("hermes-agent: pre-flight probe failed: {}", e.getMessage());
+            return false;
+        }
     }
 
     /**
@@ -108,18 +150,18 @@ public class HermesAgentService {
         rec.setStartedAt(System.currentTimeMillis());
         rec.appendOutput("[hcc] launching: " + rec.getCommandLine(), false);
         fireUpdate(rec);
-        log.info("hermes-agent start: id={} cwd={} role={}",
-            rec.getId(), rec.getWorkingDir(), rec.getAssignedRole());
+        log.info("hermes-agent start: id={} cwd={} role={} cmd=\"{}\"",
+            rec.getId(), rec.getWorkingDir(), rec.getAssignedRole(), rec.getCommandLine());
+        Process p = null;
         try {
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.redirectErrorStream(false);
-            Process p = pb.start();
+            p = pb.start();
             currentProcess = p;
 
             Thread out = drainAsync(p.getInputStream(), rec, false);
             Thread err = drainAsync(p.getErrorStream(), rec, true);
             int exit = p.waitFor();
-            // give the drain threads a moment to flush
             out.join(1500);
             err.join(1500);
 
@@ -128,7 +170,10 @@ public class HermesAgentService {
                 if (exit == 0) {
                     rec.setState(TaskRecord.State.DONE);
                 } else {
-                    rec.setErrorTag("exit=" + exit);
+                    String firstErr = rec.firstStderrLine();
+                    String tag = "exit=" + exit
+                        + (firstErr.isEmpty() ? "" : ": " + firstErr);
+                    rec.setErrorTag(tag);
                     rec.setState(TaskRecord.State.FAILED);
                 }
             }
@@ -136,7 +181,14 @@ public class HermesAgentService {
             rec.appendOutput("[hcc] finished: exit=" + exit
                 + " state=" + rec.getState()
                 + " duration_ms=" + rec.durationMs(), false);
-            log.info("hermes-agent done: id={} exit={} state={}", rec.getId(), exit, rec.getState());
+            // Debug exhaustivo: comando, exit, tamaños de stdout/stderr
+            log.info("hermes-agent done: id={} exit={} state={} stdout_chars={} stderr_chars={}",
+                rec.getId(), exit, rec.getState(),
+                rec.fullStdout().length(), rec.fullStderr().length());
+            if (exit != 0) {
+                log.error("hermes-agent failure detail: id={} tag=\"{}\" stderr=\"{}\"",
+                    rec.getId(), rec.getErrorTag(), rec.fullStderr().trim());
+            }
         } catch (IOException | InterruptedException e) {
             if (e instanceof InterruptedException) Thread.currentThread().interrupt();
             rec.setErrorTag(e.getClass().getSimpleName() + ": " + e.getMessage());
@@ -144,6 +196,13 @@ public class HermesAgentService {
             rec.setFinishedAt(System.currentTimeMillis());
             rec.appendOutput("[hcc] error: " + rec.getErrorTag(), true);
             log.error("hermes-agent failed: id={} err={}", rec.getId(), rec.getErrorTag());
+        } catch (Exception e) {
+            // Cualquier otra excepción no debe tumbar el runner
+            rec.setErrorTag(e.getClass().getSimpleName() + ": " + e.getMessage());
+            rec.setState(TaskRecord.State.FAILED);
+            rec.setFinishedAt(System.currentTimeMillis());
+            rec.appendOutput("[hcc] unexpected error: " + rec.getErrorTag(), true);
+            log.error("hermes-agent unexpected: id={} err={}", rec.getId(), rec.getErrorTag());
         } finally {
             currentProcess = null;
             fireUpdate(rec);
@@ -167,18 +226,34 @@ public class HermesAgentService {
         return t;
     }
 
-    private String[] buildCommand(String prompt, String workingDir) {
+    private String[] buildCommand(String prompt, String workingDir, boolean fallback) {
         String wslRoot = wslPath(config.getHermesRoot());
         String wd = (workingDir == null || workingDir.isBlank()) ? wslRoot : workingDir;
-        String script =
-            "set +e; "
-          + "source " + wslRoot + "/config/hermes-env.sh 2>/dev/null; "
-          + "export ENGRAM_DATA_DIR='" + wslRoot + "/memory'; "
-          + "export ENGRAM_PORT=7437; "
-          + "export ENGRAM_TIMEZONE=America/Costa_Rica; "
-          + "cd '" + wd + "' && "
-          + wslRoot + "/hermes-agent/.venv/bin/python "
-          + wslRoot + "/hermes-agent/hermes -z \"$1\"";
+        String script;
+        if (fallback) {
+            // Modo directo seguro: bash ejecuta el prompt como comando simple.
+            // Si falla (comando no existe) sigue siendo visible en la UI,
+            // nunca FAILED silencioso.
+            script =
+                "set +e; "
+              + "cd '" + wd + "' && "
+              + "echo \"[hcc-fallback] hermes CLI no disponible, ejecucion directa en bash\"; "
+              + "echo \"[hcc-fallback] prompt recibido:\"; "
+              + "printf '%s\\n' \"$1\"; "
+              + "echo \"[hcc-fallback] intentando ejecutar prompt como comando...\"; "
+              + "bash -c \"$1\" 2>&1; "
+              + "echo \"[hcc-fallback] exit=$?\"";
+        } else {
+            script =
+                "set +e; "
+              + "source " + wslRoot + "/config/hermes-env.sh 2>/dev/null; "
+              + "export ENGRAM_DATA_DIR='" + wslRoot + "/memory'; "
+              + "export ENGRAM_PORT=7437; "
+              + "export ENGRAM_TIMEZONE=America/Costa_Rica; "
+              + "cd '" + wd + "' && "
+              + wslRoot + "/hermes-agent/.venv/bin/python "
+              + wslRoot + "/hermes-agent/hermes -z \"$1\"";
+        }
         return new String[] {
             "wsl", "-d", config.getWslDistro(), "-u", config.getLinuxUser(), "--",
             "bash", "-lc", script,
