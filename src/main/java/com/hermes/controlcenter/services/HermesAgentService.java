@@ -23,19 +23,18 @@ import java.util.function.Consumer;
  * minutes) and the user must be able to cancel mid-flight. The executor's
  * fixed-timeout model doesn't fit.</p>
  *
- * <p>Routing:</p>
+ * <p>Routing (inline prompt, NO positional args):</p>
  * <pre>
  *   wsl -d Ubuntu-24.04 -u antony --
- *     bash -lc "source config/hermes-env.sh &amp;&amp; cd $WD &amp;&amp; .../hermes -z \"$1\""
- *     hermes-agent
- *     &lt;prompt&gt;
+ *     bash -lc "source config/hermes-env.sh &amp;&amp; cd /mnt/e/Dev/Hermes &amp;&amp; .../hermes -z \"prompt escapado\""
  * </pre>
  *
- * <p>The prompt is passed as a positional arg to bash so it is not subject
- * to shell expansion inside the double-quoted invocation. The script sources
- * the API keys from {@code config/hermes-env.sh} and changes to the configured
- * working directory (Hermes project root by default) so the agent resolves
- * AGENTS.md and the project tree correctly.</p>
+ * <p>The prompt is pre-processed by {@link #buildHermesPrompt(String, String, String)}
+ * (normalize paths, strip line breaks, inject role/cwd) and then escaped by
+ * {@link #escapeForBashDoubleQuote(String)} before being inlined in the bash
+ * script as a single double-quoted literal. There is never a separate token
+ * after {@code bash -lc}. This avoids the "expected one argument" argparse
+ * error that occurs when the prompt is passed as a positional arg.</p>
  */
 public class HermesAgentService {
     private static final Logger log = LoggerFactory.getLogger(HermesAgentService.class);
@@ -76,7 +75,14 @@ public class HermesAgentService {
             log.warn("hermes-agent: pre-flight failed, using bash fallback for task {}", rec.getId());
         }
 
-        String[] cmd = buildCommand(prompt, rec.getWorkingDir(), !hermesAvailable);
+        // Construir el PROMPT LIMPIO como un solo string antes de generar
+        // el comando. NUNCA pasar el prompt como token suelto a bash.
+        String fullPrompt = buildHermesPrompt(role, rec.getWorkingDir(), prompt);
+        log.info("[hcc] FINAL PROMPT = \"{}\"", abbreviate(fullPrompt));
+
+        String[] cmd = buildCommand(fullPrompt, rec.getWorkingDir(), !hermesAvailable);
+        log.info("[hcc] COMMAND = \"{}\"", rec.getCommandLine());
+
         rec.setCommandLine(String.join(" ", cmd));
         synchronized (runLock) {
             currentTask = rec;
@@ -189,6 +195,18 @@ public class HermesAgentService {
                 log.error("hermes-agent failure detail: id={} tag=\"{}\" stderr=\"{}\"",
                     rec.getId(), rec.getErrorTag(), rec.fullStderr().trim());
             }
+
+            // FALLBACK: si hermes -z se quejó de parsing (expected one argument
+            // / usage / argument required), NO marcar FAILED silencioso:
+            // ejecutar `bash -lc "echo <prompt> && eval <prompt safe>"` y
+            // actualizar el record con su output.
+            if (rec.getState() == TaskRecord.State.FAILED
+                && isHermesUsageError(rec.fullStderr())) {
+                log.warn("hermes-agent: detected -z usage error, running bash fallback for id={}",
+                    rec.getId());
+                rec.appendOutput("[hcc] detectado error de parsing -z, ejecutando fallback bash -lc", true);
+                runBashFallback(rec);
+            }
         } catch (IOException | InterruptedException e) {
             if (e instanceof InterruptedException) Thread.currentThread().interrupt();
             rec.setErrorTag(e.getClass().getSimpleName() + ": " + e.getMessage());
@@ -226,23 +244,27 @@ public class HermesAgentService {
         return t;
     }
 
-    private String[] buildCommand(String prompt, String workingDir, boolean fallback) {
+    private String[] buildCommand(String fullPrompt, String workingDir, boolean fallback) {
         String wslRoot = wslPath(config.getHermesRoot());
-        String wd = (workingDir == null || workingDir.isBlank()) ? wslRoot : workingDir;
+        String wd = wslPath((workingDir == null || workingDir.isBlank()) ? wslRoot : workingDir);
+        // El prompt ya viene limpio y pre-escapado (vía buildHermesPrompt +
+        // escapeForBashDoubleQuote) desde submit(). Aquí SOLO lo embebemos.
+        // No más positional args, no más "hermes-agent" como $0, no más
+        // tokens sueltos después de -z.
+        String escapedPrompt = escapeForBashDoubleQuote(fullPrompt);
         String script;
         if (fallback) {
             // Modo directo seguro: bash ejecuta el prompt como comando simple.
-            // Si falla (comando no existe) sigue siendo visible en la UI,
-            // nunca FAILED silencioso.
+            // Si falla (comando no existe) sigue siendo visible en la UI.
             script =
                 "set +e; "
-              + "cd '" + wd + "' && "
-              + "echo \"[hcc-fallback] hermes CLI no disponible, ejecucion directa en bash\"; "
-              + "echo \"[hcc-fallback] prompt recibido:\"; "
-              + "printf '%s\\n' \"$1\"; "
-              + "echo \"[hcc-fallback] intentando ejecutar prompt como comando...\"; "
-              + "bash -c \"$1\" 2>&1; "
-              + "echo \"[hcc-fallback] exit=$?\"";
+              + "cd '" + wd + "'; "
+              + "echo '[hcc-fallback] hermes CLI no disponible, ejecucion directa en bash'; "
+              + "echo '[hcc-fallback] prompt recibido:'; "
+              + "printf '%s\\n' \"" + escapedPrompt + "\"; "
+              + "echo '[hcc-fallback] bash intentando ejecutar prompt como comando...'; "
+              + "bash -c \"" + escapedPrompt + "\" 2>&1; "
+              + "echo '[hcc-fallback] exit='$?";
         } else {
             script =
                 "set +e; "
@@ -250,16 +272,157 @@ public class HermesAgentService {
               + "export ENGRAM_DATA_DIR='" + wslRoot + "/memory'; "
               + "export ENGRAM_PORT=7437; "
               + "export ENGRAM_TIMEZONE=America/Costa_Rica; "
-              + "cd '" + wd + "' && "
+              + "cd '" + wd + "'; "
               + wslRoot + "/hermes-agent/.venv/bin/python "
-              + wslRoot + "/hermes-agent/hermes -z \"$1\"";
+              + wslRoot + "/hermes-agent/hermes -z \"" + escapedPrompt + "\"";
         }
+        // ÚNICO arg después de "bash -lc": el script completo. Ningún token
+        // suelto, ningún positional arg, ningún fragmento del prompt aquí.
         return new String[] {
             "wsl", "-d", config.getWslDistro(), "-u", config.getLinuxUser(), "--",
-            "bash", "-lc", script,
-            "hermes-agent",
-            prompt
+            "bash", "-lc", script
         };
+    }
+
+    /**
+     * Construye el prompt limpio que se pasará al agente.
+     *
+     * Reglas:
+     *  - normaliza paths Windows a WSL (E:\ → /mnt/e/, etc.)
+     *  - concatena role + cwd + prompt en un SOLO string
+     *  - remueve tokens inválidos que se colaron (p.ej. "hermes-agent")
+     *  - reemplaza saltos de línea con espacios (NUNCA \n en el prompt final)
+     *  - idempotente: misma entrada → misma salida
+     */
+    private String buildHermesPrompt(String role, String workingDir, String prompt) {
+        if (prompt == null) prompt = "";
+        // 1) Quitar saltos de línea (CR/LF → espacio)
+        String p = prompt.replace("\r\n", " ").replace("\n", " ").replace("\r", " ");
+        // 2) Quitar tokens que no deberían estar (huérfanos del build previo)
+        p = p.replace("hermes-agent", "").replace("\\\\", "/");
+        // 3) Normalizar paths Windows sueltos que el usuario haya pegado
+        p = normalizeWindowsPathsInText(p);
+        // 4) Prefijos opcionales
+        StringBuilder sb = new StringBuilder();
+        if (role != null && !role.isBlank() && !"default".equalsIgnoreCase(role)) {
+            sb.append("[role=").append(role.trim()).append("] ");
+        }
+        if (workingDir != null && !workingDir.isBlank()) {
+            sb.append("[cwd=").append(wslPath(workingDir)).append("] ");
+        }
+        sb.append(p.trim());
+        // 5) Colapsar espacios múltiples
+        String out = sb.toString().replaceAll("\\s+", " ").trim();
+        // 6) Defensa final: si quedó vacío, poner marcador
+        if (out.isEmpty()) out = "[empty-prompt]";
+        return out;
+    }
+
+    /**
+     * Convierte paths tipo Windows pegados en texto en su equivalente WSL.
+     * Ej:  E:\Dev\Hermes\foo  →  /mnt/e/Dev/Hermes/foo
+     *      "abrir E:\test"     →  "abrir /mnt/e/test"
+     */
+    private String normalizeWindowsPathsInText(String s) {
+        if (s == null || s.isEmpty()) return s;
+        return s.replaceAll("([A-Za-z]):\\\\", "/mnt/$1/")
+                .replaceAll("\\\\", "/");
+    }
+
+    /**
+     * Escapa un string para embeberlo de forma segura dentro de un literal
+     * double-quoted de bash (ej:  bash -c ".... -z \"$PROMPT\""  ).
+     *
+     * Caracteres que requieren escape en double-quoted bash:
+     *   \  → \\
+     *   "  → \"
+     *   $  → \$
+     *   `  → \`
+     *   !  → \!  (history expansion en interactive bash; -lc suele no
+     *            expandir pero lo hacemos por defensa)
+     */
+    private String escapeForBashDoubleQuote(String s) {
+        if (s == null) return "";
+        StringBuilder out = new StringBuilder(s.length() + 16);
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '\\': out.append("\\\\"); break;
+                case '"':  out.append("\\\""); break;
+                case '$':  out.append("\\$");  break;
+                case '`':  out.append("\\`");  break;
+                case '!':  out.append("\\!");  break;
+                default:   out.append(c);
+            }
+        }
+        return out.toString();
+    }
+
+    /**
+     * Detecta si stderr contiene un error de parsing de argparse en hermes -z.
+     * Patrones conocidos: "expected one argument", "usage:", "error:", etc.
+     */
+    private static boolean isHermesUsageError(String stderr) {
+        if (stderr == null || stderr.isEmpty()) return false;
+        String lower = stderr.toLowerCase();
+        return lower.contains("expected one argument")
+            || lower.contains("usage:")
+            || (lower.contains("error:") && lower.contains("-z"))
+            || (lower.contains("error:") && lower.contains("--oneshot"))
+            || lower.contains("argument -z")
+            || lower.contains("argument --oneshot");
+    }
+
+    /**
+     * Fallback post-facto cuando hermes -z falló por parsing.
+     * Corre un bash simple que muestra el prompt y opcionalmente lo evalúa
+     * de forma segura, actualizando el mismo TaskRecord (append output,
+     * reset state a DONE si exit=0, FAILED en otro caso).
+     */
+    private void runBashFallback(TaskRecord rec) {
+        String escaped = escapeForBashDoubleQuote(rec.getPrompt());
+        // Script simple: echo del prompt, luego eval. No más.
+        String script = "set +e; "
+            + "echo '[hcc-fallback] hermes -z fallo, prompt era:'; "
+            + "printf '%s\\n' \"" + escaped + "\"; "
+            + "echo '[hcc-fallback] intentando ejecutar como comando bash...'; "
+            + "bash -c \"" + escaped + "\" 2>&1; "
+            + "echo '[hcc-fallback] exit='$?";
+        String[] cmd = {
+            "wsl", "-d", config.getWslDistro(), "-u", config.getLinuxUser(), "--",
+            "bash", "-lc", script
+        };
+        log.info("hermes-agent fallback: id={} cmd=\"{}\"", rec.getId(), String.join(" ", cmd));
+        try {
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            // Leer todo el output (el fallback es rápido, lectura síncrona)
+            StringBuilder out = new StringBuilder();
+            try (BufferedReader r = new BufferedReader(
+                    new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = r.readLine()) != null) {
+                    rec.appendOutput(line, false);
+                    out.append(line).append('\n');
+                }
+            }
+            int exit = p.waitFor();
+            rec.appendOutput("[hcc] fallback exit=" + exit, false);
+            if (exit == 0) {
+                rec.setState(TaskRecord.State.DONE);
+                rec.setErrorTag(null);
+            } else {
+                rec.setErrorTag("fallback exit=" + exit);
+                rec.setState(TaskRecord.State.FAILED);
+            }
+            log.info("hermes-agent fallback done: id={} exit={} out_chars={}",
+                rec.getId(), exit, out.length());
+        } catch (Exception e) {
+            rec.appendOutput("[hcc] fallback error: " + e.getMessage(), true);
+            rec.setErrorTag("fallback exception: " + e.getMessage());
+            log.error("hermes-agent fallback exception: id={} err={}", rec.getId(), e.getMessage());
+        }
     }
 
     private void fireUpdate(TaskRecord rec) {
