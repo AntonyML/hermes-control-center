@@ -120,13 +120,21 @@ public class TerminalLauncherService {
         try {
             List<String> cmd = new ArrayList<>();
             cmd.add("wt.exe");
-            cmd.add("-d");
-            cmd.add(".");
+            cmd.add("-w");
+            cmd.add("0");
+            cmd.add("new-tab");
             cmd.add("--title");
             cmd.add(title);
-            cmd.add("cmd.exe");
-            cmd.add("/c");
-            cmd.add(commandLine);
+            cmd.add("wsl.exe");
+            cmd.add("-d");
+            cmd.add(config.getWslDistro());
+            cmd.add("-u");
+            cmd.add(config.getLinuxUser());
+            cmd.add("--");
+            cmd.add("tmux");
+            cmd.add("attach");
+            cmd.add("-t");
+            cmd.add("hermes");
             log.info("launch: {}", String.join(" ", cmd));
             new ProcessBuilder(cmd).inheritIO().start();
             return true;

@@ -8,6 +8,7 @@ import com.hermes.controlcenter.domain.state.AppState;
 import com.hermes.controlcenter.infrastructure.CommandExecutor;
 import com.hermes.controlcenter.services.EngramService;
 import com.hermes.controlcenter.services.HealthCheckService;
+import com.hermes.controlcenter.services.HermesAgentService;
 import com.hermes.controlcenter.services.HermesService;
 import com.hermes.controlcenter.services.OpenCodeService;
 import com.hermes.controlcenter.services.PluginStatusService;
@@ -38,6 +39,7 @@ public class ApplicationContext {
     private final WslService wsl;
     private final TmuxService tmux;
     private final HermesService hermes;
+    private final HermesAgentService hermesAgent;
     private final EngramService engram;
     private final OpenCodeService opencode;
     private final PluginStatusService plugins;
@@ -61,6 +63,7 @@ public class ApplicationContext {
         this.wsl = new WslService(executor, config);
         this.tmux = new TmuxService(executor, config);
         this.hermes = new HermesService(executor, config);
+        this.hermesAgent = new HermesAgentService(config);
         this.engram = new EngramService(executor, config);
         this.opencode = new OpenCodeService(executor);
         this.plugins = new PluginStatusService(executor, config);
@@ -94,6 +97,7 @@ public class ApplicationContext {
     public WslService wsl() { return wsl; }
     public TmuxService tmux() { return tmux; }
     public HermesService hermes() { return hermes; }
+    public HermesAgentService hermesAgent() { return hermesAgent; }
     public EngramService engram() { return engram; }
     public OpenCodeService opencode() { return opencode; }
     public PluginStatusService plugins() { return plugins; }

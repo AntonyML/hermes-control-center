@@ -2,10 +2,12 @@ package com.hermes.controlcenter.app;
 
 import com.hermes.controlcenter.bootstrap.ApplicationContext;
 import com.hermes.controlcenter.bootstrap.StartupController;
+import com.hermes.controlcenter.controllers.AgentController;
 import com.hermes.controlcenter.controllers.ConfigController;
 import com.hermes.controlcenter.controllers.ConsoleController;
 import com.hermes.controlcenter.controllers.DiagnosticController;
 import com.hermes.controlcenter.controllers.HomeController;
+import com.hermes.controlcenter.ui.AgentPanel;
 import com.hermes.controlcenter.ui.ConfigPanel;
 import com.hermes.controlcenter.ui.DiagnosticPanel;
 import com.hermes.controlcenter.ui.HomePanel;
@@ -37,12 +39,14 @@ public class MainFrame {
     private static final String CARD_HOME = "home";
     private static final String CARD_DIAG = "diag";
     private static final String CARD_CONFIG = "config";
+    private static final String CARD_AGENT = "agent";
 
     private final JFrame frame;
     private final JPanel cards;
     private final HomePanel homePanel;
     private final DiagnosticPanel diagnosticPanel;
     private final ConfigPanel configPanel;
+    private final AgentPanel agentPanel;
     private final ApplicationContext ctx;
 
     public MainFrame(ApplicationContext ctx) {
@@ -51,16 +55,19 @@ public class MainFrame {
         ConsoleController consoleCtl = new ConsoleController(ctx);
         DiagnosticController diagCtl = new DiagnosticController(ctx);
         ConfigController configCtl = new ConfigController(ctx);
+        AgentController agentCtl = new AgentController(ctx.hermesAgent());
 
         this.homePanel = new HomePanel(homeCtl, consoleCtl);
         this.diagnosticPanel = new DiagnosticPanel(diagCtl);
         this.configPanel = new ConfigPanel(configCtl);
+        this.agentPanel = new AgentPanel(agentCtl);
 
         this.cards = new JPanel(new CardLayout());
         cards.setBackground(new Color(0x0F172A));
         cards.add(homePanel, CARD_HOME);
         cards.add(diagnosticPanel, CARD_DIAG);
         cards.add(configPanel, CARD_CONFIG);
+        cards.add(agentPanel, CARD_AGENT);
 
         this.frame = new JFrame("Hermes Control Center");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -97,11 +104,14 @@ public class MainFrame {
         JButton home = navButton("Home");
         JButton diag = navButton("Diagnóstico");
         JButton conf = navButton("Configuración");
+        JButton agent = navButton("Agente");
         home.addActionListener(e -> showCard(CARD_HOME));
         diag.addActionListener(e -> { showCard(CARD_DIAG); diagnosticPanel.applyCurrent(); });
         conf.addActionListener(e -> showCard(CARD_CONFIG));
+        agent.addActionListener(e -> { showCard(CARD_AGENT); agentPanel.focusInput(); });
         right.add(home);
         right.add(diag);
+        right.add(agent);
         right.add(conf);
         nav.add(right, BorderLayout.EAST);
         return nav;
