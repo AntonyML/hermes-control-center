@@ -1,0 +1,67 @@
+# ─────────────────────────────────────────────────────────────
+# Hermes Control Center — .gitignore
+# Java 21 + Gradle + Swing/FlatLaf app
+# ─────────────────────────────────────────────────────────────
+
+# ===== Gradle =====
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# ===== IntelliJ IDEA =====
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# ===== VS Code =====
+.vscode/
+.classpath
+.project
+.settings/
+
+# ===== Eclipse =====
+*.classpath
+*.project
+*.settings/
+bin/
+
+# ===== NetBeans =====
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# ===== Java =====
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# ===== Logs (runtime) =====
+logs/
+*.log
+*.err
+*.out
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# ===== Config local del usuario (generada por ConfigStore) =====
+# Si quieres versionar la config por defecto, mueve esto a config.example.json
+config.json
+
+# ===== Build outputs específicos =====
+build/libs/
+build/distributions/
+build/tmp/
+build/reports/
+build/test-results/
