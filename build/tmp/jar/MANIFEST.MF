@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Main-Class: com.hermes.controlcenter.app.HermesControlCenterApp
+Implementation-Title: Hermes Control Center
+Implementation-Version: 1.0.0
+
