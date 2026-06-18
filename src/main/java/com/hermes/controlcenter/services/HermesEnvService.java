@@ -92,6 +92,8 @@ public class HermesEnvService {
             return lastStatus;
         }
 
+        ensureModelConfig(vars);
+
         lastStatus = EnvStatus.OK;
         lastError = "";
         log.info("HermesEnv: OK — NVIDIA_API_KEY loaded, ~/.hermes/.env created/updated");
@@ -217,6 +219,46 @@ public class HermesEnvService {
         } catch (Exception e) {
             log.warn("HermesEnv: createDotEnv failed: {}", e.getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Ensures ~/.hermes/config.yaml has a model.default set.
+     * Uses NVIDIA_DEEPSEEK_MODEL from hermes-env.sh if available,
+     * otherwise falls back to "deepseek-ai/deepseek-v4-flash".
+     * Does NOT overwrite an existing model.default.
+     */
+    private void ensureModelConfig(Map<String, String> vars) {
+        String model = vars.getOrDefault("NVIDIA_DEEPSEEK_MODEL", "deepseek-ai/deepseek-v4-flash");
+        String script =
+            "CFG=~/.hermes/config.yaml; "
+          + "if [ ! -f \"$CFG\" ] || ! grep -q '^model:' \"$CFG\" 2>/dev/null; then "
+          + "  echo 'model:' > \"$CFG\"; "
+          + "  echo '  default: " + model + "' >> \"$CFG\"; "
+          + "  echo \"__OK__\"; "
+          + "elif ! grep -q 'default:' \"$CFG\" 2>/dev/null; then "
+          + "  echo '  default: " + model + "' >> \"$CFG\"; "
+          + "  echo \"__OK__\"; "
+          + "else "
+          + "  echo \"__SKIP__\"; "
+          + "fi";
+        String[] cmd = wslCmd(script);
+        try {
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            String out;
+            try (BufferedReader r = new BufferedReader(
+                    new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
+                out = r.readLine();
+            }
+            p.waitFor(5, java.util.concurrent.TimeUnit.SECONDS);
+            if (p.isAlive()) p.destroyForcibly();
+            if (out != null && out.contains("__OK__")) {
+                log.info("HermesEnv: set default model to {}", model);
+            }
+        } catch (Exception e) {
+            log.warn("HermesEnv: ensureModelConfig failed: {}", e.getMessage());
         }
     }
 
