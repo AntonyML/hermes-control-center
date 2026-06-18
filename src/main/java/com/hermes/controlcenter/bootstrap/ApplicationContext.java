@@ -9,6 +9,7 @@ import com.hermes.controlcenter.infrastructure.CommandExecutor;
 import com.hermes.controlcenter.services.EngramService;
 import com.hermes.controlcenter.services.HealthCheckService;
 import com.hermes.controlcenter.services.HermesAgentService;
+import com.hermes.controlcenter.services.HermesEnvService;
 import com.hermes.controlcenter.services.HermesService;
 import com.hermes.controlcenter.services.OpenCodeService;
 import com.hermes.controlcenter.services.PluginStatusService;
@@ -40,6 +41,7 @@ public class ApplicationContext {
     private final TmuxService tmux;
     private final HermesService hermes;
     private final HermesAgentService hermesAgent;
+    private final HermesEnvService hermesEnv;
     private final EngramService engram;
     private final OpenCodeService opencode;
     private final PluginStatusService plugins;
@@ -63,7 +65,8 @@ public class ApplicationContext {
         this.wsl = new WslService(executor, config);
         this.tmux = new TmuxService(executor, config);
         this.hermes = new HermesService(executor, config);
-        this.hermesAgent = new HermesAgentService(config);
+        this.hermesEnv = new HermesEnvService(config);
+        this.hermesAgent = new HermesAgentService(config, hermesEnv);
         this.engram = new EngramService(executor, config);
         this.opencode = new OpenCodeService(executor);
         this.plugins = new PluginStatusService(executor, config);
@@ -98,6 +101,7 @@ public class ApplicationContext {
     public TmuxService tmux() { return tmux; }
     public HermesService hermes() { return hermes; }
     public HermesAgentService hermesAgent() { return hermesAgent; }
+    public HermesEnvService hermesEnv() { return hermesEnv; }
     public EngramService engram() { return engram; }
     public OpenCodeService opencode() { return opencode; }
     public PluginStatusService plugins() { return plugins; }
@@ -111,7 +115,7 @@ public class ApplicationContext {
     public ExecutorService probes() { return probes; }
 
     private int countServices() {
-        return 9;
+        return 10;
     }
 
     public void shutdown() {

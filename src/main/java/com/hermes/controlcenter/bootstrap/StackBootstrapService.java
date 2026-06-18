@@ -69,6 +69,10 @@ public class StackBootstrapService {
                 hermesProbe();
                 delayVisualFloor(150);
 
+                advance(StartupPhase.ENV, "Configurando variables de entorno de Hermes", onProgress);
+                envSetup();
+                delayVisualFloor(150);
+
                 advance(StartupPhase.ENGRAM, "Probando Engram HTTP", onProgress);
                 engramProbe();
                 delayVisualFloor(150);
@@ -185,6 +189,24 @@ public class StackBootstrapService {
             log.warn("hermes probe failed: {}", e.getMessage());
             ctx.cache().buffer().put("Hermes",
                 ServiceHealth.starting("Hermes", "probe failed: " + e.getMessage()));
+        }
+    }
+
+    private void envSetup() {
+        try {
+            var status = ctx.hermesEnv().ensureEnvLoaded();
+            if (status == com.hermes.controlcenter.services.HermesEnvService.EnvStatus.OK) {
+                ctx.cache().buffer().put("Hermes Env",
+                    ServiceHealth.online("Hermes Env", "1.0", "variables de entorno configuradas"));
+            } else {
+                ctx.cache().buffer().put("Hermes Env",
+                    ServiceHealth.starting("Hermes Env",
+                        "env: " + status.name() + " — " + ctx.hermesEnv().lastError()));
+            }
+        } catch (Exception e) {
+            log.warn("env setup failed: {}", e.getMessage());
+            ctx.cache().buffer().put("Hermes Env",
+                ServiceHealth.starting("Hermes Env", "env setup failed: " + e.getMessage()));
         }
     }
 

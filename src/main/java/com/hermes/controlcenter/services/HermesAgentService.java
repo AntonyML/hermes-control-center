@@ -40,13 +40,23 @@ public class HermesAgentService {
     private static final Logger log = LoggerFactory.getLogger(HermesAgentService.class);
 
     private final AppConfig config;
+    private final HermesEnvService hermesEnv;
     private final List<Consumer<TaskRecord>> taskListeners = new CopyOnWriteArrayList<>();
     private volatile Process currentProcess;
     private volatile TaskRecord currentTask;
     private final Object runLock = new Object();
 
     public HermesAgentService(AppConfig config) {
+        this(config, null);
+    }
+
+    public HermesAgentService(AppConfig config, HermesEnvService hermesEnv) {
         this.config = config;
+        this.hermesEnv = hermesEnv;
+    }
+
+    public HermesEnvService.EnvStatus envStatus() {
+        return hermesEnv == null ? HermesEnvService.EnvStatus.CHECK_FAILED : hermesEnv.probeDotEnv();
     }
 
     public void addTaskListener(Consumer<TaskRecord> l) { taskListeners.add(l); }
@@ -66,6 +76,12 @@ public class HermesAgentService {
         TaskRecord rec = new TaskRecord(prompt);
         if (workingDir != null && !workingDir.isBlank()) rec.setWorkingDir(workingDir);
         if (role != null && !role.isBlank()) rec.setAssignedRole(role);
+
+        // Pre-flight: asegurar que las variables de entorno estén cargadas
+        // en ~/.hermes/.env para que hermes detecte el provider NVIDIA.
+        if (hermesEnv != null) {
+            hermesEnv.ensureEnvLoaded();
+        }
 
         // Pre-flight: si el CLI de hermes no está disponible, fallback
         // automático a `bash -lc "<prompt>"` (modo directo seguro).

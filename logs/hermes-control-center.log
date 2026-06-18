@@ -1829,3 +1829,178 @@
               {chat,model,fallback,secrets,migrate,gateway,proxy,lsp,setup,postinstall,whatsapp,whatsapp-cloud,slack,send,login,logout,auth,status,cron,webhook,portal,kanban,hooks,doctor,security,dump,debug,backup,checkpoints,import,config,pairing,skills,bundles,plugins,curator,memory,tools,computer-use,mcp,sessions,insights,claw,version,update,uninstall,acp,profile,completion,dashboard,desktop,gui,logs,prompt-size}
               ...
 hermes: error: argument -z/--oneshot: expected one argument"
+2026-06-18 02:20:42.083 [AWT-EventQueue-0] INFO  c.h.c.app.HermesControlCenterApp - Hermes Control Center booting
+2026-06-18 02:20:42.226 [AWT-EventQueue-0] INFO  c.h.controlcenter.config.ConfigStore - No config.json found; using defaults
+2026-06-18 02:20:42.231 [AWT-EventQueue-0] INFO  c.h.c.bootstrap.ApplicationContext - ApplicationContext built (9 cached services)
+2026-06-18 02:20:42.717 [AWT-EventQueue-0] INFO  c.h.c.bootstrap.StartupController - StartupController: start
+2026-06-18 02:20:42.721 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - bootstrap: starting full sequence
+2026-06-18 02:20:42.721 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Boot (5%) Construyendo contexto de aplicación
+2026-06-18 02:20:42.721 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase BOOT -> Boot: Construyendo contexto de aplicación
+2026-06-18 02:20:42.845 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Configuración (10%) Cargando config.json
+2026-06-18 02:20:42.845 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase CONFIG -> Configuración: Cargando config.json
+2026-06-18 02:20:43.001 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Cache (15%) Calentando cache de arranque
+2026-06-18 02:20:43.001 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase CACHE -> Cache: Calentando cache de arranque
+2026-06-18 02:20:43.160 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: WSL (30%) Probando WSL2 y Ubuntu 24.04
+2026-06-18 02:20:43.160 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase WSL -> WSL: Probando WSL2 y Ubuntu 24.04
+2026-06-18 02:20:43.161 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: List tmux sessions
+2026-06-18 02:20:43.291 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=54 stderr=0)
+2026-06-18 02:20:43.453 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: tmux (40%) Probando tmux server
+2026-06-18 02:20:43.453 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase TMUX -> tmux: Probando tmux server
+2026-06-18 02:20:43.453 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: List tmux sessions
+2026-06-18 02:20:43.551 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=54 stderr=0)
+2026-06-18 02:20:43.707 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Hermes (60%) Probando Hermes Agent
+2026-06-18 02:20:43.707 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase HERMES -> Hermes: Probando Hermes Agent
+2026-06-18 02:20:43.707 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:20:43.803 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:20:43.811 [hcc-bootstrap] INFO  c.h.c.services.HermesService - Hermes ONLINE (tmux session found)
+2026-06-18 02:20:43.963 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Engram (80%) Probando Engram HTTP
+2026-06-18 02:20:43.963 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase ENGRAM -> Engram: Probando Engram HTTP
+2026-06-18 02:20:43.963 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check Engram health on port 7437 (read-only)
+2026-06-18 02:20:44.081 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=13 stderr=0)
+2026-06-18 02:20:44.081 [hcc-bootstrap] INFO  c.h.c.services.EngramService - Engram ONLINE (port responding)
+2026-06-18 02:20:44.237 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Plugins (90%) Probando plugins del shell
+2026-06-18 02:20:44.237 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase PLUGINS -> Plugins: Probando plugins del shell
+2026-06-18 02:20:44.237 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe git version
+2026-06-18 02:20:44.341 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=20 stderr=0)
+2026-06-18 02:20:44.341 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe bat version
+2026-06-18 02:20:44.561 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=11 stderr=0)
+2026-06-18 02:20:44.561 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe batcat version
+2026-06-18 02:20:44.671 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=12 stderr=0)
+2026-06-18 02:20:44.671 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe eza version
+2026-06-18 02:20:44.782 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=101 stderr=0)
+2026-06-18 02:20:44.782 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe btop version
+2026-06-18 02:20:44.911 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=21 stderr=0)
+2026-06-18 02:20:44.911 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe lazygit version
+2026-06-18 02:20:45.515 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=168 stderr=0)
+2026-06-18 02:20:45.516 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe zoxide version
+2026-06-18 02:20:45.632 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=14 stderr=0)
+2026-06-18 02:20:45.632 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe oh-my-posh version
+2026-06-18 02:20:45.741 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=9 stderr=0)
+2026-06-18 02:20:45.898 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Snapshot (95%) Construyendo snapshot del stack
+2026-06-18 02:20:45.898 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase SNAPSHOT -> Snapshot: Construyendo snapshot del stack
+2026-06-18 02:20:45.898 [hcc-bootstrap] INFO  c.h.c.services.HealthCheckService - snapshot: probing all services
+2026-06-18 02:20:45.898 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: List tmux sessions
+2026-06-18 02:20:45.993 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=54 stderr=0)
+2026-06-18 02:20:46.002 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: List tmux sessions
+2026-06-18 02:20:46.091 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=54 stderr=0)
+2026-06-18 02:20:46.091 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:20:46.192 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:20:46.192 [hcc-bootstrap] INFO  c.h.c.services.HermesService - Hermes ONLINE (tmux session found)
+2026-06-18 02:20:46.192 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check Engram health on port 7437 (read-only)
+2026-06-18 02:20:46.313 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=13 stderr=0)
+2026-06-18 02:20:46.313 [hcc-bootstrap] INFO  c.h.c.services.EngramService - Engram ONLINE (port responding)
+2026-06-18 02:20:46.313 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe opencode version
+2026-06-18 02:20:46.321 [hcc-bootstrap] ERROR c.h.c.infrastructure.CommandExecutor -   failed: Cannot run program "opencode": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+2026-06-18 02:20:46.321 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:20:46.422 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:20:46.422 [hcc-bootstrap] INFO  c.h.c.services.HealthCheckService - snapshot: primary action = ENTER_HERMES
+2026-06-18 02:20:46.422 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:20:46.514 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:20:46.521 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: List tmux sessions
+2026-06-18 02:20:46.612 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=54 stderr=0)
+2026-06-18 02:20:46.770 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Listo (100%) Stack inicializado
+2026-06-18 02:20:46.770 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase READY -> Listo: Stack inicializado
+2026-06-18 02:20:46.770 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - bootstrap: done
+2026-06-18 02:20:56.592 [AWT-EventQueue-0] INFO  c.h.c.controllers.HomeController - primary action: ENTER_HERMES
+2026-06-18 02:20:56.604 [hcc-io] INFO  c.h.c.s.TerminalLauncherService - openHermesTerminal requested
+2026-06-18 02:20:56.604 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:20:56.712 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:20:56.712 [hcc-io] INFO  c.h.c.s.TerminalLauncherService - openRawTerminalInWindow: title='Hermes — tmux attach' cmd='wsl -d Ubuntu-24.04 -u antony -- tmux attach -t hermes'
+2026-06-18 02:20:56.803 [hcc-io] INFO  c.h.c.s.TerminalLauncherService - launch: wt.exe -w 0 new-tab --title Hermes — tmux attach wsl.exe -d Ubuntu-24.04 -u antony -- tmux attach -t hermes
+2026-06-18 02:21:01.173 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor - exec: List tmux sessions
+2026-06-18 02:21:01.279 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=65 stderr=0)
+2026-06-18 02:21:17.004 [AWT-EventQueue-0] INFO  c.h.c.services.HermesAgentService - [hcc] FINAL PROMPT = "hola"
+2026-06-18 02:21:17.017 [AWT-EventQueue-0] INFO  c.h.c.services.HermesAgentService - [hcc] COMMAND = "null"
+2026-06-18 02:21:17.017 [hermes-agent-runner] INFO  c.h.c.services.HermesAgentService - hermes-agent start: id=07843ff2 cwd=null role=default cmd="wsl -d Ubuntu-24.04 -u antony -- bash -lc set +e; source /mnt/e/Dev/Hermes/config/hermes-env.sh 2>/dev/null; export ENGRAM_DATA_DIR='/mnt/e/Dev/Hermes/memory'; export ENGRAM_PORT=7437; export ENGRAM_TIMEZONE=America/Costa_Rica; cd '/mnt/e/Dev/Hermes'; /mnt/e/Dev/Hermes/hermes-agent/.venv/bin/python /mnt/e/Dev/Hermes/hermes-agent/hermes -z "hola""
+2026-06-18 02:21:44.426 [hermes-agent-runner] INFO  c.h.c.services.HermesAgentService - hermes-agent done: id=07843ff2 exit=1 state=FAILED stdout_chars=419 stderr_chars=71
+2026-06-18 02:21:44.426 [hermes-agent-runner] ERROR c.h.c.services.HermesAgentService - hermes-agent failure detail: id=07843ff2 tag="exit=1: hermes -z: no final response was produced; treating the run as failed." stderr="hermes -z: no final response was produced; treating the run as failed."
+2026-06-18 02:22:51.692 [AWT-EventQueue-0] INFO  c.h.c.controllers.HomeController - primary action: START_STACK
+2026-06-18 02:22:51.692 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:22:51.814 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:22:55.759 [AWT-EventQueue-0] INFO  c.h.c.controllers.HomeController - primary action: START_STACK
+2026-06-18 02:22:55.759 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:22:55.862 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:23:31.715 [AWT-EventQueue-0] INFO  c.h.c.controllers.HomeController - primary action: START_STACK
+2026-06-18 02:23:31.715 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:23:31.804 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:23:31.995 [AWT-EventQueue-0] INFO  c.h.c.controllers.HomeController - primary action: START_STACK
+2026-06-18 02:23:31.995 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:23:32.105 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:23:36.585 [AWT-EventQueue-0] INFO  c.h.c.app.HermesControlCenterApp - Hermes Control Center booting
+2026-06-18 02:23:36.750 [AWT-EventQueue-0] INFO  c.h.controlcenter.config.ConfigStore - No config.json found; using defaults
+2026-06-18 02:23:36.765 [AWT-EventQueue-0] INFO  c.h.c.bootstrap.ApplicationContext - ApplicationContext built (9 cached services)
+2026-06-18 02:23:37.245 [AWT-EventQueue-0] INFO  c.h.c.bootstrap.StartupController - StartupController: start
+2026-06-18 02:23:37.245 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - bootstrap: starting full sequence
+2026-06-18 02:23:37.245 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Boot (5%) Construyendo contexto de aplicación
+2026-06-18 02:23:37.245 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase BOOT -> Boot: Construyendo contexto de aplicación
+2026-06-18 02:23:37.369 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Configuración (10%) Cargando config.json
+2026-06-18 02:23:37.369 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase CONFIG -> Configuración: Cargando config.json
+2026-06-18 02:23:37.529 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Cache (15%) Calentando cache de arranque
+2026-06-18 02:23:37.529 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase CACHE -> Cache: Calentando cache de arranque
+2026-06-18 02:23:37.688 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: WSL (30%) Probando WSL2 y Ubuntu 24.04
+2026-06-18 02:23:37.688 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase WSL -> WSL: Probando WSL2 y Ubuntu 24.04
+2026-06-18 02:23:37.688 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: List tmux sessions
+2026-06-18 02:23:37.795 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=54 stderr=0)
+2026-06-18 02:23:37.957 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: tmux (40%) Probando tmux server
+2026-06-18 02:23:37.957 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase TMUX -> tmux: Probando tmux server
+2026-06-18 02:23:37.957 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: List tmux sessions
+2026-06-18 02:23:38.067 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=54 stderr=0)
+2026-06-18 02:23:38.226 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Hermes (60%) Probando Hermes Agent
+2026-06-18 02:23:38.226 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase HERMES -> Hermes: Probando Hermes Agent
+2026-06-18 02:23:38.226 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:23:38.325 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:23:38.325 [hcc-bootstrap] INFO  c.h.c.services.HermesService - Hermes ONLINE (tmux session found)
+2026-06-18 02:23:38.482 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Engram (80%) Probando Engram HTTP
+2026-06-18 02:23:38.482 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase ENGRAM -> Engram: Probando Engram HTTP
+2026-06-18 02:23:38.482 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check Engram health on port 7437 (read-only)
+2026-06-18 02:23:38.658 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=13 stderr=0)
+2026-06-18 02:23:38.658 [hcc-bootstrap] INFO  c.h.c.services.EngramService - Engram ONLINE (port responding)
+2026-06-18 02:23:38.817 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Plugins (90%) Probando plugins del shell
+2026-06-18 02:23:38.817 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase PLUGINS -> Plugins: Probando plugins del shell
+2026-06-18 02:23:38.817 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe git version
+2026-06-18 02:23:38.935 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=20 stderr=0)
+2026-06-18 02:23:38.935 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe bat version
+2026-06-18 02:23:39.145 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=11 stderr=0)
+2026-06-18 02:23:39.145 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe batcat version
+2026-06-18 02:23:39.279 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=12 stderr=0)
+2026-06-18 02:23:39.279 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe eza version
+2026-06-18 02:23:39.395 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=101 stderr=0)
+2026-06-18 02:23:39.395 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe btop version
+2026-06-18 02:23:39.505 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=21 stderr=0)
+2026-06-18 02:23:39.505 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe lazygit version
+2026-06-18 02:23:40.126 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=168 stderr=0)
+2026-06-18 02:23:40.126 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe zoxide version
+2026-06-18 02:23:40.246 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=14 stderr=0)
+2026-06-18 02:23:40.246 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe oh-my-posh version
+2026-06-18 02:23:40.415 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=9 stderr=0)
+2026-06-18 02:23:40.569 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Snapshot (95%) Construyendo snapshot del stack
+2026-06-18 02:23:40.569 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase SNAPSHOT -> Snapshot: Construyendo snapshot del stack
+2026-06-18 02:23:40.569 [hcc-bootstrap] INFO  c.h.c.services.HealthCheckService - snapshot: probing all services
+2026-06-18 02:23:40.569 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: List tmux sessions
+2026-06-18 02:23:40.655 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=54 stderr=0)
+2026-06-18 02:23:40.655 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: List tmux sessions
+2026-06-18 02:23:40.755 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=54 stderr=0)
+2026-06-18 02:23:40.761 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:23:40.856 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:23:40.856 [hcc-bootstrap] INFO  c.h.c.services.HermesService - Hermes ONLINE (tmux session found)
+2026-06-18 02:23:40.856 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check Engram health on port 7437 (read-only)
+2026-06-18 02:23:40.975 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=13 stderr=0)
+2026-06-18 02:23:40.975 [hcc-bootstrap] INFO  c.h.c.services.EngramService - Engram ONLINE (port responding)
+2026-06-18 02:23:40.975 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Probe opencode version
+2026-06-18 02:23:40.983 [hcc-bootstrap] ERROR c.h.c.infrastructure.CommandExecutor -   failed: Cannot run program "opencode": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+2026-06-18 02:23:40.983 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:23:41.079 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:23:41.079 [hcc-bootstrap] INFO  c.h.c.services.HealthCheckService - snapshot: primary action = ENTER_HERMES
+2026-06-18 02:23:41.079 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:23:41.175 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:23:41.175 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor - exec: List tmux sessions
+2026-06-18 02:23:41.285 [hcc-bootstrap] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=54 stderr=0)
+2026-06-18 02:23:41.446 [hcc-bootstrap] INFO  c.h.controlcenter.cache.StartupCache - startup progress: Listo (100%) Stack inicializado
+2026-06-18 02:23:41.446 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - phase READY -> Listo: Stack inicializado
+2026-06-18 02:23:41.446 [hcc-bootstrap] INFO  c.h.c.b.StackBootstrapService - bootstrap: done
+2026-06-18 02:23:42.615 [AWT-EventQueue-0] INFO  c.h.c.controllers.HomeController - primary action: ENTER_HERMES
+2026-06-18 02:23:42.615 [hcc-io] INFO  c.h.c.s.TerminalLauncherService - openHermesTerminal requested
+2026-06-18 02:23:42.615 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor - exec: Check tmux session 'hermes' exists (read-only)
+2026-06-18 02:23:42.716 [hcc-io] INFO  c.h.c.infrastructure.CommandExecutor -   exit: 0 (stdout=0 stderr=0)
+2026-06-18 02:23:42.716 [hcc-io] INFO  c.h.c.s.TerminalLauncherService - openRawTerminalInWindow: title='Hermes — tmux attach' cmd='wsl -d Ubuntu-24.04 -u antony -- tmux attach -t hermes'
+2026-06-18 02:23:42.805 [hcc-io] INFO  c.h.c.s.TerminalLauncherService - launch: wt.exe -w 0 new-tab --title Hermes — tmux attach wsl.exe -d Ubuntu-24.04 -u antony -- tmux attach -t hermes

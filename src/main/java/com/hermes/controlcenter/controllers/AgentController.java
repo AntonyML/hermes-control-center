@@ -2,6 +2,7 @@ package com.hermes.controlcenter.controllers;
 
 import com.hermes.controlcenter.domain.model.TaskRecord;
 import com.hermes.controlcenter.services.HermesAgentService;
+import com.hermes.controlcenter.services.HermesEnvService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,8 @@ public class AgentController {
     public List<TaskRecord> history() { return Collections.unmodifiableList(history); }
 
     public boolean isRunning() { return service.isRunning(); }
+
+    public HermesEnvService.EnvStatus envStatus() { return service.envStatus(); }
 
     /**
      * Submit a new task. If a task is already running it is left alone; the

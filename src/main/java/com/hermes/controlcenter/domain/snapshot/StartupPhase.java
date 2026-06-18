@@ -9,6 +9,7 @@ public enum StartupPhase {
     WSL("WSL", "Probando WSL2 y Ubuntu 24.04"),
     TMUX("tmux", "Probando tmux server"),
     HERMES("Hermes", "Probando Hermes Agent"),
+    ENV("Env", "Configurando variables de entorno de Hermes"),
     ENGRAM("Engram", "Probando Engram HTTP"),
     PLUGINS("Plugins", "Probando plugins del shell"),
     SNAPSHOT("Snapshot", "Construyendo snapshot del stack"),
@@ -37,7 +38,8 @@ public enum StartupPhase {
             case WSL -> 0.15;
             case TMUX -> 0.10;
             case HERMES -> 0.20;
-            case ENGRAM -> 0.20;
+            case ENV -> 0.05;
+            case ENGRAM -> 0.15;
             case PLUGINS -> 0.10;
             case SNAPSHOT -> 0.05;
             case READY -> 0.05;

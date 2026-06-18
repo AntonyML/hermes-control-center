@@ -62,6 +62,7 @@ public class AgentPanel extends JPanel implements AgentController.Listener {
     private final JLabel promptHintLabel;
     private final JProgressBar spinner;
     private final JLabel roleLabel;
+    private final JLabel envLabel;
     private final DefaultListModel<TaskRecord> historyModel;
     private final JList<TaskRecord> historyList;
     private final JScrollPane outputScroll;
@@ -109,6 +110,14 @@ public class AgentPanel extends JPanel implements AgentController.Listener {
         roleLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
         roleLabel.setForeground(new Color(0x94A3B8));
         statusBox.add(roleLabel, BorderLayout.EAST);
+
+        envLabel = new JLabel("Env: ?");
+        envLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+        envLabel.setForeground(new Color(0x94A3B8));
+        envLabel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(0x334155)),
+            new EmptyBorder(2, 8, 2, 8)));
+        header.add(envLabel, BorderLayout.LINE_END);
 
         header.add(statusBox, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
@@ -327,6 +336,32 @@ public class AgentPanel extends JPanel implements AgentController.Listener {
         TaskRecord cur = controller.current();
         boolean running = controller.isRunning();
         spinner.setVisible(running);
+
+        // Env status indicator
+        try {
+            var env = controller.envStatus();
+            switch (env) {
+                case OK -> {
+                    envLabel.setText("Env: OK");
+                    envLabel.setForeground(new Color(0x4ADE80));
+                }
+                case MISSING_KEYS -> {
+                    envLabel.setText("Env: missing NVIDIA_API_KEY");
+                    envLabel.setForeground(new Color(0xFBBF24));
+                }
+                case NOT_LOADED -> {
+                    envLabel.setText("Env: hermes-env.sh not found");
+                    envLabel.setForeground(new Color(0xF87171));
+                }
+                case CHECK_FAILED -> {
+                    envLabel.setText("Env: ?");
+                    envLabel.setForeground(new Color(0x94A3B8));
+                }
+            }
+        } catch (Exception e) {
+            envLabel.setText("Env: error");
+            envLabel.setForeground(new Color(0xF87171));
+        }
         if (cur == null) {
             statusLabel.setText("IDLE");
             statusLabel.setForeground(new Color(0x4ADE80));
